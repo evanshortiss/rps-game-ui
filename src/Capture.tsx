@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 
+function isMobileDevice () {
+  return navigator.userAgent.match(/ipod|ipad|iphone|android/gi)
+}
+
 function Capture () {
   const videoRef = useRef<HTMLVideoElement|null>(null);
   const canvasRef = useRef<HTMLCanvasElement|null>(null);
@@ -10,7 +14,13 @@ function Capture () {
   }, [videoRef])
 
   async function getVideoStream () {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 300 } })
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        width: 300,
+        facingMode: isMobileDevice() ? 'environment' : 'user'
+      }
+    })
+    
     const video = videoRef.current;
     
     if (video) {
@@ -36,7 +46,7 @@ function Capture () {
       setImageData(canvas.toDataURL())
     }
   }
-  
+
   function discardMove () {
     setImageData(undefined)
   }

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom';
 
 function isMobileDevice () {
   return navigator.userAgent.match(/ipod|ipad|iphone|android/gi)
@@ -8,6 +9,8 @@ function Capture () {
   const videoRef = useRef<HTMLVideoElement|null>(null);
   const canvasRef = useRef<HTMLCanvasElement|null>(null);
   const [imageData, setImageData] = useState<string|undefined>()
+  const [move, setMove] = useState<string>("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     getVideoStream()
@@ -51,6 +54,17 @@ function Capture () {
     setImageData(undefined)
   }
 
+  function selectMove(choice: string) {
+    setMove(choice);
+  }
+
+  function submitMove() {
+    if (move) {
+      // Code to submit the move.
+      navigate("/results");
+    }
+  }
+
   return (
     <div>
       <div>
@@ -60,9 +74,18 @@ function Capture () {
         <br />
         <video hidden={imageData ? true : false} ref={videoRef} autoPlay playsInline muted />
         <canvas hidden={imageData ? false : true} ref={canvasRef}></canvas>
+        <br />
+        <br />
+        <button onClick={() => selectMove("rock")} >🪨</button>
+        <button onClick={() => selectMove("paper")} >🧻</button>
+        <button onClick={() => selectMove("scissors")} >✂️</button>
+        <br />
+        <br />
+        <button onClick={submitMove}>Submit Move</button>
       </div>
+      {move && <h2>You have selected {move}</h2>}
     </div>
   );
 }
 
-export default Capture
+export default Capture;

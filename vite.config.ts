@@ -8,4 +8,12 @@ const SSL_ENABLED = env.get('SSL_ENABLED').asBool()
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()].concat(SSL_ENABLED ? [basicSsl()] : []),
+  server: {
+    proxy: {
+      '/game': {
+        followRedirects: true,
+        target: 'http://localhost:8080'
+      }
+    }
+  }
 })

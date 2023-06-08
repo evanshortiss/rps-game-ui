@@ -1,16 +1,23 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom';
+import { GameRestAPI } from './types';
 
 function isMobileDevice () {
   return navigator.userAgent.match(/ipod|ipad|iphone|android/gi)
 }
 
-function Capture () {
+type CaptureComponentProps = {
+  userId: number
+  team: number
+}
+
+const Capture: React.FunctionComponent<CaptureComponentProps> = (props) => {
+  // TODO: maybe consider extracting video into it's own component
   const videoRef = useRef<HTMLVideoElement|null>(null);
   const canvasRef = useRef<HTMLCanvasElement|null>(null);
-  const [imageData, setImageData] = useState<string|undefined>()
-  const [move, setMove] = useState<string>("");
-  const navigate = useNavigate();
+  const [imageData, setImageData] = useState<string>()
+  const [move, setMove] = useState<GameRestAPI.Shape>();
+  const [ request, setRequest ] = useState<Promise<Response>>()
+  const [ response, setResponse ] = useState<GameRestAPI.ShotResult>()
 
   useEffect(() => {
     getVideoStream()
@@ -20,6 +27,8 @@ function Capture () {
     const stream = await navigator.mediaDevices.getUserMedia({
       video: {
         width: 300,
+        // On a laptop, use the camera that faces the user. On iOS and Android
+        // devices use the "selfie" camera
         facingMode: isMobileDevice() ? 'environment' : 'user'
       }
     })
@@ -54,20 +63,34 @@ function Capture () {
     setImageData(undefined)
   }
 
-  function selectMove(choice: string) {
-    setMove(choice);
-  }
+  async function submitMove() {
+    if (imageData) {
+      // Submit image data
+    } else if (move) {
+      const _request = fetch(`/game/detect/button/${props.team}/${props.userId}`, {
+        method: 'POST',
+        body: move
+      })
 
-  function submitMove() {
-    if (move) {
-      // Code to submit the move.
-      navigate("/results");
+      _request
+        .then((res) => res.json())
+        .then(json => setResponse(json))
+        .catch((err) => {
+          // TODO
+        })
+
+      setRequest(_request)
+    } else {
+      alert('unexpected condition')
     }
   }
 
   return (
     <div>
-      <div>
+      <div hidden={response === undefined }>
+        The classifier determined that your move was {response?.shape}!
+      </div>
+      <div hidden={request !== undefined}>
         <button hidden={imageData ? true : false} onClick={() => captureMove()}>Capture Move</button>
         <button hidden={imageData ? false : true} onClick={() => discardMove()}>Discard Move</button>
         <br />
@@ -76,14 +99,14 @@ function Capture () {
         <canvas hidden={imageData ? false : true} ref={canvasRef}></canvas>
         <br />
         <br />
-        <button onClick={() => selectMove("rock")} >🪨</button>
-        <button onClick={() => selectMove("paper")} >🧻</button>
-        <button onClick={() => selectMove("scissors")} >✂️</button>
+        <button onClick={() => setMove(GameRestAPI.Shape.Rock)} >🪨</button>
+        <button onClick={() => setMove(GameRestAPI.Shape.Paper)} >🧻</button>
+        <button onClick={() => setMove(GameRestAPI.Shape.Scissors)} >✂️</button>
         <br />
         <br />
-        <button onClick={submitMove}>Submit Move</button>
+        <button hidden={move === undefined} onClick={submitMove}>Submit Move</button>
+        {move && <h2>You have selected {move}</h2>}
       </div>
-      {move && <h2>You have selected {move}</h2>}
     </div>
   );
 }

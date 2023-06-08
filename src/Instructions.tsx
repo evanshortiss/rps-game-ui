@@ -1,10 +1,12 @@
 // src/InstructionsPage.tsx
 
 import { useNavigate } from 'react-router-dom';
+import { GameStateContext } from './GameStateProvider';
+import { useContext } from 'react';
 
 function InstructionsPage() {
   const navigate = useNavigate();
-
+  
   const handleNextClick = () => {
     navigate("/capture");
   };
@@ -24,6 +26,7 @@ function InstructionsPage() {
       <p>
         <strong>Behind the scenes:</strong> A <a href="https://www.redhat.com/en/technologies/cloud-computing/openshift/openshift-data-science" target="_blank" rel="noreferrer">Red Hat OpenShift Data Science</a> model processes your image.
       </p>
+      <p>Your user name is</p>
       <button onClick={handleNextClick}>Ready, Set, Play!</button>
     </div>
   );

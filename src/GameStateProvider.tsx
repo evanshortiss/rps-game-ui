@@ -29,7 +29,7 @@ const GameStateContextProvider: React.FunctionComponent<any> = (props) => {
 
     initAndAssign()
       .then((data) => {
-        const _ctx = {
+        const _ctx: GameStateReady = {
           config: data.config,
           user: data.assignment,
           ready: true
@@ -37,7 +37,8 @@ const GameStateContextProvider: React.FunctionComponent<any> = (props) => {
 
         log('setting ctx to', _ctx)
 
-        setCtx(_ctx)
+        // TODO: remove this delay at some point
+        setTimeout(() => setCtx(_ctx), 1000)
       })
 
     
@@ -48,6 +49,8 @@ const GameStateContextProvider: React.FunctionComponent<any> = (props) => {
 
     _es.addEventListener('message', function (event) {
       log('received event:', JSON.parse(event.data))
+      // TODO: process server-sent events and add these to the
+      // GameStateContext object for use by child components
     });
 
     _es.addEventListener('error', function (event) {
